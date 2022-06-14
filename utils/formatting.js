@@ -1,3 +1,9 @@
+const dayjs = require('dayjs');
+const weekOfYear = require('dayjs/plugin/weekOfYear');
+require('dotenv').config();
+
+dayjs.extend(weekOfYear);
+
 const createDateRangeFromSheetData = (dateArr) => {
     const dateRanges = ['', ''];
     let currentDate = '';
@@ -99,10 +105,50 @@ const formatIntoShifts = (shiftCells) => {
     return shifts;
 }
 
+const generateThisSchedulePeriod = () => {
+    const currentWeek = dayjs().week();
+        const delta = 0;
+        const nextMonday = dayjs().week(currentWeek + delta).day(1);
+        const nextSunday = nextMonday.add(6, 'day');
+
+        return {
+            startDay: nextMonday.format('D'),
+            startMonth: nextMonday.format('MMM'),
+            startYear: nextMonday.format('YYYY'),
+            endDay: nextSunday.format('D'),
+            endMonth: nextSunday.format('MMM')
+        };
+}
+
+const findAndReturnTheRightSheetName = (namedRanges) => {
+    const periodDates = generateThisSchedulePeriod();
+    const periodDatesArr = Object.values(periodDates);
+
+    console.log('periodDatesArr', periodDatesArr);
+
+    for (const range of namedRanges) {
+        const rangeName = range.name;
+        let foundAllNames = true;
+
+        for (const dateVal of periodDatesArr) {
+            if (!rangeName.includes(dateVal)) {
+                foundAllNames = false;
+                break;
+            }
+        }
+        
+        if (!foundAllNames) {
+            continue;
+        }
+
+        return rangeName.split('!')[0]; // get rid of any sheets commands in name
+    }
+}
+
 const defaultCalendarEvent = {
     calendarId: process.env.CALENDAR_ID,
-    summary: 'LHL Shift',
     resource: {
+        summary: 'LHL Shift',
         start: {
             dateTime: '',
             timeZone: process.env.TIMEZONE
@@ -110,27 +156,27 @@ const defaultCalendarEvent = {
         end: {
             dateTime: '',
             timeZone: process.env.TIMEZONE
-        }
+        },
+        reminders: {
+            useDefault: false,
+            overrides: [
+                {
+                    method: 'email',
+                    minutes: 24 * 60
+                },
+                {
+                    method: 'email',
+                    minutes: 30
+                }
+            ]
+        },
     },
-    reminders: {
-        useDefault: false,
-        overrides: [
-            {
-                method: 'popup',
-                minutes: 24 * 60
-            },
-            {
-                method: 'popup',
-                minutes: 30
-            }
-        ]
-    },
-    colorId: '22'
 }
 
 module.exports = {
     createDateRangeFromSheetData,
     extractTimesFromSheetData,
     formatIntoShifts,
+    findAndReturnTheRightSheetName,
     defaultCalendarEvent
 }

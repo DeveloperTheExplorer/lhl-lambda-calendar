@@ -3,32 +3,29 @@ const {
     createDateRangeFromSheetData,
     extractTimesFromSheetData,
     formatIntoShifts,
+    findAndReturnTheRightSheetName,
     defaultCalendarEvent
 } = require('./utils/formatting');
 require('dotenv').config();
 
 let sheetsAPI, calendarAPI;
 
-const addShiftsToCalendar = (shifts) => {
+const addShiftsToCalendar = async (shifts) => {
     const event = defaultCalendarEvent;
-    const promises = [];
 
-    for (const shift of shifts) {
-        event.resource.start.dateTime = shift.startTime.toISOString();
-        event.resource.end.dateTime = shift.endTime.toISOString();
-        const stringifiedEvent = JSON.stringify(event);
+    try {
+        for (const shift of shifts) {
+            event.resource.start.dateTime = shift.startTime.toISOString();
+            event.resource.end.dateTime = shift.endTime.toISOString();
+            
+            const stringifiedEvent = JSON.stringify(event);
+            const res = await calendarAPI.events.insert(JSON.parse(stringifiedEvent));
 
-        console.log('gapi.client', gapi.client);
-        console.log('stringifiedEvent', stringifiedEvent);
-
-        promises.push(
-            gapi.client.calendar.events.insert(JSON.parse(stringifiedEvent))
-        );
-
-        // return gapi.client.calendar.events.insert(JSON.parse(stringifiedEvent))
+            console.log('res', res);
+        }
+    } catch (error) {
+        console.log('error:', error)
     }
-
-    return Promise.all(promises);
 }
 
 const processSheetData = (data) => {
@@ -36,24 +33,37 @@ const processSheetData = (data) => {
     const dateRanges = createDateRangeFromSheetData(sheetDates);
     const shiftCells = extractTimesFromSheetData(data, dateRanges);
     const shifts = formatIntoShifts(shiftCells);
-
-    console.log('dateRanges', dateRanges);
-    console.log('shiftCells', shiftCells);
-    console.log('shifts', shifts);
-
-    addShiftsToCalendar(shifts).then(
-        (result) => console.log(result)
-    );
+    
+    addShiftsToCalendar(shifts)
+        .then(
+            (result) => console.log(result)
+        )
+        .catch(
+            (err) => console.log('ERROR!', err)
+        );
 }
 
 // TODO: Find the latest range using dayjs
 const getSpreadSheetData = async () => {
-    const response = await sheetsAPI.spreadsheets.get({
-        spreadsheetId: process.env.SPREADSHEET_ID,
-        fields: 'namedRanges'
-    })
+    try {
+        const response = await sheetsAPI.spreadsheets.get({
+            spreadsheetId: process.env.SPREADSHEET_ID,
+            fields: 'namedRanges'
+        });
+        const namedRanges = response.data.namedRanges;
+        const sheetName = findAndReturnTheRightSheetName(namedRanges);
+        const result = await sheetsAPI.spreadsheets.values.get({
+            spreadsheetId: process.env.SPREADSHEET_ID,
+            range: sheetName,
+            majorDimension: 'ROWS'
+        });
 
-    console.log('response', response);
+        processSheetData(result.data.values);
+
+        console.log('sheetName', sheetName);
+    } catch(err) {
+        console.log('err', err);
+    }
 }
 
 const authenticate = async () => {
