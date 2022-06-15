@@ -85,7 +85,9 @@ const authenticate = async () => {
     await getSpreadSheetData();
 }
 
-authenticate();
+if (process.env.NODE_ENV === 'dev') {
+    authenticate();
+}
 
 exports.handler = async (event) => {
     await authenticate();

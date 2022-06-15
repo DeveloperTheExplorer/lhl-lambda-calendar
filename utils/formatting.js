@@ -107,17 +107,17 @@ const formatIntoShifts = (shiftCells) => {
 
 const generateThisSchedulePeriod = () => {
     const currentWeek = dayjs().week();
-        const delta = 0;
-        const nextMonday = dayjs().week(currentWeek + delta).day(1);
-        const nextSunday = nextMonday.add(6, 'day');
+    const delta = 0;
+    const nextMonday = dayjs().week(currentWeek + delta).day(1);
+    const nextSunday = nextMonday.add(6, 'day');
 
-        return {
-            startDay: nextMonday.format('D'),
-            startMonth: nextMonday.format('MMM'),
-            startYear: nextMonday.format('YYYY'),
-            endDay: nextSunday.format('D'),
-            endMonth: nextSunday.format('MMM')
-        };
+    return {
+        startDay: nextMonday.format('D'),
+        startMonth: nextMonday.format('MMM'),
+        startYear: nextMonday.format('YYYY'),
+        endDay: nextSunday.format('D'),
+        endMonth: nextSunday.format('MMM')
+    };
 }
 
 const findAndReturnTheRightSheetName = (namedRanges) => {
