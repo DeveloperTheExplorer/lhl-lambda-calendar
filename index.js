@@ -28,19 +28,17 @@ const addShiftsToCalendar = async (shifts) => {
     }
 }
 
-const processSheetData = (data) => {
+const processSheetData = async (data) => {
     const sheetDates = data[0];
     const dateRanges = createDateRangeFromSheetData(sheetDates);
     const shiftCells = extractTimesFromSheetData(data, dateRanges);
     const shifts = formatIntoShifts(shiftCells);
     
-    addShiftsToCalendar(shifts)
-        .then(
-            (result) => console.log(result)
-        )
-        .catch(
-            (err) => console.log('ERROR!', err)
-        );
+    try {
+        await addShiftsToCalendar(shifts);
+    } catch (error) {
+        console.log('error', error)
+    }
 }
 
 // TODO: Find the latest range using dayjs
@@ -58,7 +56,7 @@ const getSpreadSheetData = async () => {
             majorDimension: 'ROWS'
         });
 
-        processSheetData(result.data.values);
+        await processSheetData(result.data.values);
 
         console.log('sheetName', sheetName);
     } catch(err) {
