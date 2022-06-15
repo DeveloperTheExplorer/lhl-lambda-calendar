@@ -68,7 +68,7 @@ const getSpreadSheetData = async () => {
 
 const authenticate = async () => {
     const auth = new google.auth.GoogleAuth({
-        keyFilename: './lhl-lambda-26f603cc5a32.json',
+        keyFilename: process.env.GOOGLE_APPLICATION_CREDENTIALS,
         scopes: ['https://www.googleapis.com/auth/spreadsheets.readonly', 'https://www.googleapis.com/auth/calendar', 'https://www.googleapis.com/auth/calendar.events']
     });
     const authClient = await auth.getClient();
