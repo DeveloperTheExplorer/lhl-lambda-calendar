@@ -68,6 +68,11 @@ const extractTimesFromSheetData = (arr2D, dateRanges) => {
 const formatIntoShifts = (shiftCells) => {
     const shifts = [];
 
+    // TODO: Figure out grouping of shifts closest to each other
+    // shiftCells.sort(
+    //     (a, b) => a.timePST < b.timePST
+    // );
+
     for (const shiftCell of shiftCells) {
         const shiftAlreadyCreated = shifts.find(
             (cell) => cell.day === shiftCell.day
@@ -77,7 +82,8 @@ const formatIntoShifts = (shiftCells) => {
             continue;
         }
 
-        let startTime = 999;
+        // let duration = 1;
+        let startTime = shiftCell.timePST;
         let endTime = 0;
 
         for (const otherCell of shiftCells) {
@@ -88,6 +94,7 @@ const formatIntoShifts = (shiftCells) => {
             if (otherCell.timePST < startTime) {
                 startTime = otherCell.timePST;
             }
+
             if (otherCell.timePST + 1 > endTime) {
                 endTime = otherCell.timePST + 1;
             }
@@ -146,31 +153,14 @@ const findAndReturnTheRightSheetName = (namedRanges) => {
 }
 
 const defaultCalendarEvent = {
-    calendarId: process.env.CALENDAR_ID,
-    resource: {
-        summary: 'LHL Shift',
-        start: {
-            dateTime: '',
-            timeZone: process.env.TIMEZONE
-        },
-        end: {
-            dateTime: '',
-            timeZone: process.env.TIMEZONE
-        },
-        reminders: {
-            useDefault: false,
-            overrides: [
-                {
-                    method: 'email',
-                    minutes: 24 * 60
-                },
-                {
-                    method: 'email',
-                    minutes: 30
-                }
-            ]
-        },
-    },
+    start: '',
+    end: '',
+    timezone: process.env.TIMEZONE,
+    status: 'CONFIRMED',
+    title: 'LHL Shift',
+    summary: 'Lighthouse Labs shift',
+    status: 'CONFIRMED',
+    location: 'Rudder'
 }
 
 module.exports = {
