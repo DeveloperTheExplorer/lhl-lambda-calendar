@@ -81,6 +81,8 @@ const getSpreadSheetData = async () => {
         const namedRanges = response.data.namedRanges;
         sheetName = findAndReturnTheRightSheetName(namedRanges);
 
+        console.log('sheetName', sheetName);
+
         const result = await sheetsAPI.spreadsheets.values.get({
             spreadsheetId: process.env.SPREADSHEET_ID,
             range: sheetName,
