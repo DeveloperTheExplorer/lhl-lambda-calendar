@@ -68,10 +68,9 @@ const extractTimesFromSheetData = (arr2D, dateRanges) => {
 const formatIntoShifts = (shiftCells) => {
     const shifts = [];
 
-    // TODO: Figure out grouping of shifts closest to each other
-    // shiftCells.sort(
-    //     (a, b) => a.timePST < b.timePST
-    // );
+    shiftCells.sort(
+        (a, b) => a.timePST < b.timePST
+    );
 
     for (const shiftCell of shiftCells) {
         const shiftAlreadyCreated = shifts.find(
@@ -82,9 +81,8 @@ const formatIntoShifts = (shiftCells) => {
             continue;
         }
 
-        // let duration = 1;
         let startTime = shiftCell.timePST;
-        let endTime = 0;
+        let endTime = startTime + 1;
 
         for (const otherCell of shiftCells) {
             if (otherCell.day !== shiftCell.day) {
@@ -95,14 +93,27 @@ const formatIntoShifts = (shiftCells) => {
                 startTime = otherCell.timePST;
             }
 
-            if (otherCell.timePST + 1 > endTime) {
+            if (otherCell.timePST === endTime) {
                 endTime = otherCell.timePST + 1;
+            }
+
+            if (otherCell.timePST > endTime) {
+                const shift = {
+                    startTime: dayjs(shiftCell.day).hour(startTime).hour(),
+                    endTime: dayjs(shiftCell.day).hour(endTime).hour(),
+                    day: shiftCell.day
+                }
+        
+                shifts.push(shift);
+
+                startTime = otherCell.timePST;
+                endTime = startTime + 1;
             }
         };
 
         const shift = {
-            startTime: dayjs(shiftCell.day).hour(startTime),
-            endTime: dayjs(shiftCell.day).hour(endTime),
+            startTime: dayjs(shiftCell.day).hour(startTime).hour(),
+            endTime: dayjs(shiftCell.day).hour(endTime).hour(),
             day: shiftCell.day
         }
 

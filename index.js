@@ -62,8 +62,27 @@ const processSheetData = async (data) => {
     const sheetDates = data[0];
     const dateRanges = createDateRangeFromSheetData(sheetDates);
     const shiftCells = extractTimesFromSheetData(data, dateRanges);
-    const shifts = formatIntoShifts(shiftCells);
+
+    const testCells = [
+        { timezone: 'EST', time: '12pm EST', timePST: 9, day: '27-Jun 2022' },
+        { timezone: 'EST', time: '12pm EST', timePST: 9, day: '29-Jun 2022' },
+        { timezone: 'EST', time: '12pm EST', timePST: 9, day: '30-Jun 2022' },
+        { timezone: 'EST', time: '12pm EST', timePST: 9, day: '1-Jul 2022' },
+        { timezone: 'EST', time: '1pm EST', timePST: 10, day: '27-Jun 2022' },
+        { timezone: 'EST', time: '1pm EST', timePST: 10, day: '29-Jun 2022' },
+        { timezone: 'EST', time: '1pm EST', timePST: 10, day: '1-Jul 2022' },
+        { timezone: 'EST', time: '2pm EST', timePST: 11, day: '27-Jun 2022' },
+        { timezone: 'EST', time: '2pm EST', timePST: 11, day: '1-Jul 2022' },
+        { timezone: 'EST', time: '4pm EST', timePST: 13, day: '27-Jun 2022' },
+        { timezone: 'EST', time: '7pm EST', timePST: 16, day: '27-Jun 2022' },
+        { timezone: 'EST', time: '10pm EST', timePST: 19, day: '27-Jun 2022' },
+    ];
     
+    const shifts = formatIntoShifts(testCells);
+
+    
+    return console.log('shifts', shifts);
+
     try {
         await addShiftsToCalendar(shifts);
     } catch (error) {
