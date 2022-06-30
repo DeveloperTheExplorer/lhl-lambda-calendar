@@ -1,6 +1,7 @@
 const { google } = require('googleapis');
 const nodemailer = require('nodemailer');
 const icalGenerator = require('ical-generator');
+const db = require('./firebase');
 const { 
     createDateRangeFromSheetData,
     extractTimesFromSheetData,
@@ -11,22 +12,7 @@ const {
 require('dotenv').config();
 
 // const ical = icalGenerator();
-let sheetsAPI, transporter, sheetName;
-
-const database = [
-    {
-        initials: 'ARA',
-        email: 'arvin.ansari68@gmail.com'
-    },
-    {
-        initials: 'SY',
-        email: 'generalarvin@gmail.com'
-    },
-    {
-        initials: 'KEN',
-        email: 'arvinmetal6814@gmail.com'
-    },
-]
+let sheetsAPI, transporter, sheetName, usersDB;
 
 async function sendMail(content, person) {
     
@@ -35,7 +21,8 @@ async function sendMail(content, person) {
         from: '"LHL Schedule 👻"', // sender address
         to: person.email, // list of receivers
         subject: `${person.initials} | ${sheetName} LHL Schedule`, // Subject line
-        text: `Shifts generated for ${person.initials} for the time period of ${sheetName}. TO SAVE SHIFTS TO CALENDAR CLICK ON "invite.ics" AND SAVE TO CALENDAR.`, // plain text body
+        text: `Shifts generated for ${person.initials} for the time period of ${sheetName}. \nTO SAVE SHIFTS TO CALENDAR CLICK ON "invite.ics" AND SAVE TO CALENDAR. \n
+        Please do not reply to this email. Thanks.`, // plain text body
         icalEvent: {
             filename: 'invite.ics',
             method: 'PUBLISH',
@@ -76,7 +63,7 @@ const addShiftsToCalendar = async (person, shifts) => {
 const processSheetData = async (data) => {
     const sheetDates = data[0];
     const dateRanges = createDateRangeFromSheetData(sheetDates);
-    const allShiftCells = extractTimesFromSheetData(data, dateRanges, database);
+    const allShiftCells = extractTimesFromSheetData(data, dateRanges, usersDB);
     const allShiftsArr = Object.values(allShiftCells);
     
     try {
@@ -115,7 +102,13 @@ const getSpreadSheetData = async () => {
 }
 
 const authenticate = async () => {
-        const auth = new google.auth.GoogleAuth({
+    const usersCollection = await db.collection('users');
+    const usersData = await usersCollection.doc(process.env.FIREBASE_DATABASE_DOC_ID).get()
+    const { users } = usersData.data();
+    
+    usersDB = users;
+
+    const auth = new google.auth.GoogleAuth({
         keyFilename: process.env.GOOGLE_APPLICATION_CREDENTIALS,
         scopes: ['https://www.googleapis.com/auth/spreadsheets.readonly', 'https://www.googleapis.com/auth/calendar', 'https://www.googleapis.com/auth/calendar.events']
     });
