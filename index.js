@@ -52,7 +52,7 @@ const addShiftsToCalendar = async (person, shifts) => {
             name: 'LHL Schedule',
             timezone: process.env.TIMEZONE,
             events
-        })
+        });
         const res = await sendMail(calEvent.toString(), person);
         console.log('res', res);
     } catch (error) {
@@ -113,6 +113,14 @@ const authenticate = async () => {
         scopes: ['https://www.googleapis.com/auth/spreadsheets.readonly', 'https://www.googleapis.com/auth/calendar', 'https://www.googleapis.com/auth/calendar.events']
     });
     const authClient = await auth.getClient();
+    const oauth2Client = new google.auth.OAuth2(
+        process.env.GOOGLE_CLIENT_ID,
+        process.env.GOOGLE_CLIENT_SECRET,
+        "https://developers.google.com/oauthplayground"
+    );
+    oauth2Client.setCredentials({
+        refresh_token: process.env.REFRESH_TOKEN
+    });
 
     sheetsAPI = google.sheets({
         version: 'v4',
@@ -123,7 +131,7 @@ const authenticate = async () => {
         service: 'Gmail',
         auth: {
             type: 'OAuth2',
-            user: 'arvin.ansari68@gmail.com',
+            user: 'lhlschedulerbot@gmail.com',
             clientId: process.env.GOOGLE_CLIENT_ID,
             clientSecret: process.env.GOOGLE_CLIENT_SECRET,
             refreshToken: process.env.GOOGLE_REFERSH_TOKEN,

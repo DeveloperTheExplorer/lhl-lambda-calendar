@@ -1,6 +1,6 @@
 // Import the functions you need from the SDKs you need
-const { initializeApp, applicationDefault, cert } = require('firebase-admin/app');
-const { getFirestore, Timestamp, FieldValue } = require('firebase-admin/firestore');
+const { initializeApp, cert } = require('firebase-admin/app');
+const { getFirestore } = require('firebase-admin/firestore');
 require('dotenv').config();
 const serviceAccount = require(process.env.GOOGLE_APPLICATION_CREDENTIALS);
 

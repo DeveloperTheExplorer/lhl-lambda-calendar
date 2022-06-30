@@ -186,6 +186,9 @@ const defaultCalendarEvent = {
     title: 'LHL Shift',
     summary: 'Lighthouse Labs shift',
     status: 'CONFIRMED',
+    organizer: {
+        name: 'Lighthouse Labs'
+    },
     location: 'Rudder'
 }
 
