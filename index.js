@@ -13,23 +13,38 @@ require('dotenv').config();
 // const ical = icalGenerator();
 let sheetsAPI, transporter, sheetName;
 
-async function sendMail(subject, content) {
+const database = [
+    {
+        initials: 'ARA',
+        email: 'arvin.ansari68@gmail.com'
+    },
+    {
+        initials: 'SY',
+        email: 'generalarvin@gmail.com'
+    },
+    {
+        initials: 'KEN',
+        email: 'arvinmetal6814@gmail.com'
+    },
+]
+
+async function sendMail(sheetName, content, person) {
     
     // send mail with defined transport object
     return transporter.sendMail({
         from: '"LHL Schedule 👻"', // sender address
-        to: `arvin.ansari68@gmail.com`, // list of receivers
-        subject: `${subject} LHL Schedule`, // Subject line
-        text: `${subject} LHL Schedule Calendar Invite`, // plain text body
+        to: person.email, // list of receivers
+        subject: `${person.initials} | ${sheetName} LHL Schedule`, // Subject line
+        text: `Shifts generated for ${person.initials} for the time period of ${sheetName}. TO SAVE SHIFTS TO CALENDAR CLICK ON "invite.ics" AND SAVE TO CALENDAR.`, // plain text body
         icalEvent: {
             filename: 'invite.ics',
             method: 'PUBLISH',
-            content: content
+            content
         }
     });
 }
 
-const addShiftsToCalendar = async (shifts) => {
+const addShiftsToCalendar = async (person, shifts) => {
     const event = defaultCalendarEvent;
     let events = [];
 
@@ -51,7 +66,7 @@ const addShiftsToCalendar = async (shifts) => {
             timezone: process.env.TIMEZONE,
             events
         })
-        const res = await sendMail(`LHL Scheduler ${sheetName}`, calEvent.toString());
+        const res = await sendMail(sheetName, calEvent.toString(), person);
         console.log('res', res);
     } catch (error) {
         console.log('error:', error)
@@ -61,11 +76,15 @@ const addShiftsToCalendar = async (shifts) => {
 const processSheetData = async (data) => {
     const sheetDates = data[0];
     const dateRanges = createDateRangeFromSheetData(sheetDates);
-    const shiftCells = extractTimesFromSheetData(data, dateRanges);
-    const shifts = formatIntoShifts(shiftCells);
-
+    const allShiftCells = extractTimesFromSheetData(data, dateRanges, database);
+    const allShiftsArr = Object.values(allShiftCells);
+    
     try {
-        await addShiftsToCalendar(shifts);
+        for (const person of allShiftsArr) {
+            const shifts = formatIntoShifts(person.shiftCells);
+            
+            await addShiftsToCalendar(person, shifts);
+        }
     } catch (error) {
         console.log('error', error)
     }

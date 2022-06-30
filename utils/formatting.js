@@ -20,10 +20,22 @@ const createDateRangeFromSheetData = (dateArr) => {
     return dateRanges;
 }
 
-const extractTimesFromSheetData = (arr2D, dateRanges) => {
+const extractTimesFromSheetData = (arr2D, dateRanges, database) => {
     const arrStartIndex = 6;
     const arrEndIndex = 30;
-    const shiftCells = [];
+    const allShiftCells = {};
+    
+    const allInitials = database.map(
+        ({ initials, email }, i) => {
+            allShiftCells[initials] = {
+                initials,
+                email,
+                shiftCells: []
+            };
+
+            return initials;
+        }
+    );
 
     for (let y = arrStartIndex; y < arrEndIndex; ++y) {
         const row = arr2D[y];
@@ -47,9 +59,12 @@ const extractTimesFromSheetData = (arr2D, dateRanges) => {
                 continue;
             }
 
-            if (cell !== process.env.MENTOR_INITIALS) {
+            if (!allInitials.includes(cell)) {
                 continue;
             }
+            // if (cell !== process.env.MENTOR_INITIALS) {
+            //     continue;
+            // }
 
             const cellObj = {
                 timezone: tz,
@@ -58,11 +73,11 @@ const extractTimesFromSheetData = (arr2D, dateRanges) => {
                 day: dateRanges[x]
             }
 
-            shiftCells.push(cellObj);
+            allShiftCells[cell].shiftCells.push(cellObj);
         }
     }
 
-    return shiftCells;
+    return allShiftCells;
 }
 
 const formatIntoShifts = (shiftCells) => {
@@ -99,8 +114,8 @@ const formatIntoShifts = (shiftCells) => {
 
             if (otherCell.timePST > endTime) {
                 const shift = {
-                    startTime: dayjs(shiftCell.day).hour(startTime).hour(),
-                    endTime: dayjs(shiftCell.day).hour(endTime).hour(),
+                    startTime: dayjs(shiftCell.day).hour(startTime),
+                    endTime: dayjs(shiftCell.day).hour(endTime),
                     day: shiftCell.day
                 }
         
@@ -112,8 +127,8 @@ const formatIntoShifts = (shiftCells) => {
         };
 
         const shift = {
-            startTime: dayjs(shiftCell.day).hour(startTime).hour(),
-            endTime: dayjs(shiftCell.day).hour(endTime).hour(),
+            startTime: dayjs(shiftCell.day).hour(startTime),
+            endTime: dayjs(shiftCell.day).hour(endTime),
             day: shiftCell.day
         }
 
