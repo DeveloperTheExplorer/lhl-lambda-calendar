@@ -28,7 +28,7 @@ const database = [
     },
 ]
 
-async function sendMail(sheetName, content, person) {
+async function sendMail(content, person) {
     
     // send mail with defined transport object
     return transporter.sendMail({
@@ -66,7 +66,7 @@ const addShiftsToCalendar = async (person, shifts) => {
             timezone: process.env.TIMEZONE,
             events
         })
-        const res = await sendMail(sheetName, calEvent.toString(), person);
+        const res = await sendMail(calEvent.toString(), person);
         console.log('res', res);
     } catch (error) {
         console.log('error:', error)
@@ -109,8 +109,6 @@ const getSpreadSheetData = async () => {
         });
 
         await processSheetData(result.data.values);
-
-        console.log('sheetName', sheetName);
     } catch(err) {
         console.log('err', err);
     }
