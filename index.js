@@ -18,11 +18,12 @@ async function sendMail(content, person) {
     
     // send mail with defined transport object
     return transporter.sendMail({
-        from: '"LHL Schedule 👻"', // sender address
+        from: process.env.EMAIL, // sender address
         to: person.email, // list of receivers
         subject: `${person.initials} | ${sheetName} LHL Schedule`, // Subject line
-        text: `Shifts generated for ${person.initials} for the time period of ${sheetName}. \nTO SAVE SHIFTS TO CALENDAR CLICK ON "invite.ics" AND SAVE TO CALENDAR. \n
+        text: `Hello! Your shifts have been generated for the initials "${person.initials}" for the time period of ${sheetName}. \nTO SAVE SHIFTS TO CALENDAR CLICK ON "invite.ics" AND SAVE TO CALENDAR. \n
         Please do not reply to this email. Thanks.`, // plain text body
+        html: `<h2>Shifts for the period of ${sheetName}</h2><p>Hello! Your shifts have been generated for the initials "${person.initials}" for the time period of ${sheetName}.</p><p>TO SAVE SHIFTS TO CALENDAR CLICK ON "invite.ics" AND SAVE TO CALENDAR.</p><p>Please <b>do not reply</b> to this email. Thanks.</p>`, // plain text body
         icalEvent: {
             filename: 'invite.ics',
             method: 'PUBLISH',
@@ -113,14 +114,6 @@ const authenticate = async () => {
         scopes: ['https://www.googleapis.com/auth/spreadsheets.readonly', 'https://www.googleapis.com/auth/calendar', 'https://www.googleapis.com/auth/calendar.events']
     });
     const authClient = await auth.getClient();
-    const oauth2Client = new google.auth.OAuth2(
-        process.env.GOOGLE_CLIENT_ID,
-        process.env.GOOGLE_CLIENT_SECRET,
-        "https://developers.google.com/oauthplayground"
-    );
-    oauth2Client.setCredentials({
-        refresh_token: process.env.REFRESH_TOKEN
-    });
 
     sheetsAPI = google.sheets({
         version: 'v4',
@@ -128,14 +121,10 @@ const authenticate = async () => {
     });
 
     transporter = nodemailer.createTransport({
-        service: 'Gmail',
+        service: 'Hotmail',
         auth: {
-            type: 'OAuth2',
-            user: 'lhlschedulerbot@gmail.com',
-            clientId: process.env.GOOGLE_CLIENT_ID,
-            clientSecret: process.env.GOOGLE_CLIENT_SECRET,
-            refreshToken: process.env.GOOGLE_REFERSH_TOKEN,
-            expires: 1484314697598
+            user: process.env.EMAIL,
+            pass: process.env.EMAIL_PASS
         }
     });
 
