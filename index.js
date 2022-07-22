@@ -14,6 +14,19 @@ require('dotenv').config();
 // const ical = icalGenerator();
 let sheetsAPI, transporter, sheetName, usersDB;
 
+async function sendEmptyMail(person) {
+    
+    // send mail with defined transport object
+    return transporter.sendMail({
+        from: process.env.EMAIL, // sender address
+        to: person.email, // list of receivers
+        subject: `No Shifts For ${person.initials} | ${sheetName} LHL Schedule`, // Subject line
+        text: `Hello! You have no shifts scheduled for this week. \n
+        Please do not reply to this email. Thanks.`, // plain text body
+        html: `<h2>You have no shifts for the period of ${sheetName}</h2><p>Hello! You have no shifts scheduled for this week.</p><p>Please <b>do not reply</b> to this email. Thanks.</p>`
+    });
+}
+
 async function sendMail(content, person) {
     
     // send mail with defined transport object
@@ -36,6 +49,12 @@ const addShiftsToCalendar = async (person, shifts) => {
     const event = defaultCalendarEvent;
     let events = [];
 
+    if (shifts.length === 0) {
+        const res = await sendEmptyMail(person);
+
+        console.log('res', res);
+    }
+
     try {
         for (const shift of shifts) {
             event.start = shift.startTime;
@@ -55,6 +74,7 @@ const addShiftsToCalendar = async (person, shifts) => {
             events
         });
         const res = await sendMail(calEvent.toString(), person);
+            
         console.log('res', res);
     } catch (error) {
         console.log('error:', error)
